@@ -27,7 +27,10 @@ typedef struct
 
 
 /* render callback for libmad */
-void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels);
+extern "C" {
+  void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels);
+  void set_dac_sample_rate(int rate);
+}
 
 void audio_renderer_init(renderer_config_t *config);
 void audio_renderer_start(renderer_config_t *config);

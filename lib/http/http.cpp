@@ -30,10 +30,10 @@ int http_client_get(char *uri, http_parser_settings *callbacks, void *user_data)
 {
     url_t *url = url_create(uri);
 
-    const struct addrinfo hints = {
-        .ai_family = AF_INET,
-        .ai_socktype = SOCK_STREAM,
-    };
+    struct addrinfo hints;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    
     struct addrinfo *res;
     struct in_addr *addr;
     char port_str[6]; // stack allocated

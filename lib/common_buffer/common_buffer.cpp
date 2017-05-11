@@ -23,10 +23,10 @@
 /* creates a buffer struct and its storage on the heap */
 buffer_t *buf_create(size_t len)
 {
-    buffer_t* buf = calloc(1, sizeof(buffer_t));
+    buffer_t* buf = (buffer_t*)calloc(1, sizeof(buffer_t));
 
     buf->len = len;
-    buf->base = calloc(len, sizeof(uint8_t));
+    buf->base = (uint8_t*)calloc(len, sizeof(uint8_t));
     if(buf->base == NULL) {
         ESP_LOGE(TAG, "couldn't allocate buffer of size %d", len);
         return NULL;
@@ -134,11 +134,11 @@ int buf_seek_abs(buffer_t *buf, uint32_t pos)
 {
     if (buf == NULL) return -1;
 
-    if(pos > buf->fill_pos) {
+    if((uint8_t *)pos > buf->fill_pos) {
         return -1;
     }
 
-    buf->read_pos = pos;
+    buf->read_pos = (uint8_t *)pos;
 
     return 0;
 }

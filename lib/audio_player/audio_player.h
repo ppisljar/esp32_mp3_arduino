@@ -28,6 +28,7 @@ typedef enum {
 
 typedef enum
 {
+    MIME_EMPTY = 0,
     MIME_UNKNOWN = 1, OCTET_STREAM, AUDIO_AAC, AUDIO_MP4, AUDIO_MPEG
 } content_type_t;
 

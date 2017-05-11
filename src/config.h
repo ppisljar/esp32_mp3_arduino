@@ -1,6 +1,6 @@
 // WiFi credentials.
-const char* ssid = "";
-const char* password = "";
+const char* ssid = "Teltonika_Router";
+const char* password = "secpass123";
 
 
 
@@ -12,11 +12,11 @@ Size of the cumulative buffer offset before we are going to add or remove a samp
 The higher this number, the more aggressive we're adjusting the sample rate. Higher numbers give
 better resistance to buffer over/underflows due to clock differences, but also can result in
 the music sounding higher/lower due to network issues.*/
-#define ADD_DEL_BUFFPERSAMP (512)
+#define ADD_DEL_BUFFPERSAMP (1000)
 
 /*ADD_DEL_SAMPLES parameter:
 Same as ADD_DEL_BUFFPERSAMP but for systems without a big SPI RAM chip to buffer mp3 data in.*/
-#define ADD_DEL_BUFFPERSAMP_NOSPIRAM (512)
+#define ADD_DEL_BUFFPERSAMP_NOSPIRAM (1500)
 
 
 /* Connecting an I2S codec to the ESP is the best way to get nice

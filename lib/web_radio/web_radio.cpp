@@ -22,25 +22,24 @@
 
 #define TAG "web_radio"
 
-typedef enum
+enum header_field_t
 {
+    HDR_NO_CONTENT = 0,
     HDR_CONTENT_TYPE = 1
-} header_field_t;
+} ;
 
-static header_field_t curr_header_field = 0;
-static content_type_t content_type = 0;
+static header_field_t curr_header_field = HDR_NO_CONTENT;
+static content_type_t content_type = MIME_EMPTY;
 static bool headers_complete = false;
 
 static int on_header_field_cb(http_parser *parser, const char *at, size_t length)
 {
-  printf("http_get_task1\n");
-
     // convert to lower case
     unsigned char *c = (unsigned char *) at;
     for (; *c; ++c)
         *c = tolower(*c);
 
-    curr_header_field = 0;
+    curr_header_field = HDR_NO_CONTENT;
     if (strstr(at, "content-type")) {
         curr_header_field = HDR_CONTENT_TYPE;
     }
@@ -50,8 +49,6 @@ static int on_header_field_cb(http_parser *parser, const char *at, size_t length
 
 static int on_header_value_cb(http_parser *parser, const char *at, size_t length)
 {
-  printf("http_get_task2\n");
-
     if (curr_header_field == HDR_CONTENT_TYPE) {
         if (strstr(at, "application/octet-stream")) content_type = OCTET_STREAM;
         if (strstr(at, "audio/aac")) content_type = AUDIO_AAC;
@@ -70,10 +67,8 @@ static int on_header_value_cb(http_parser *parser, const char *at, size_t length
 
 static int on_headers_complete_cb(http_parser *parser)
 {
-  printf("http_get_task3\n");
-
     headers_complete = true;
-    player_t *player_config = parser->data;
+    player_t *player_config = (player_t*)parser->data;
 
     player_config->media_stream->content_type = content_type;
     player_config->media_stream->eof = false;
@@ -90,7 +85,7 @@ static int on_body_cb(http_parser* parser, const char *at, size_t length)
 
 static int on_message_complete_cb(http_parser *parser)
 {
-    player_t *player_config = parser->data;
+    player_t *player_config = (player_t*)parser->data;
     player_config->media_stream->eof = true;
 
     return 0;
@@ -98,7 +93,7 @@ static int on_message_complete_cb(http_parser *parser)
 
 static void http_get_task(void *pvParameters)
 {
-    web_radio_t *radio_conf = pvParameters;
+    web_radio_t *radio_conf = (web_radio_t*)pvParameters;
     printf("http_get_task\n");
     /* configure callbacks */
     http_parser_settings callbacks = { 0 };
@@ -107,8 +102,6 @@ static void http_get_task(void *pvParameters)
     callbacks.on_header_value = on_header_value_cb;
     callbacks.on_headers_complete = on_headers_complete_cb;
     callbacks.on_message_complete = on_message_complete_cb;
-
-    printf("http_get_task\n");
 
     // blocks until end of stream
     int result = http_client_get(radio_conf->url, &callbacks,
@@ -142,6 +135,7 @@ void web_radio_stop(web_radio_t *config)
 
 void web_radio_init(web_radio_t *config)
 {
+    
     audio_player_init(config->player_config);
 }
 

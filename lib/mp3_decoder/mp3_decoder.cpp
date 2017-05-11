@@ -97,7 +97,7 @@ static enum mad_flow error(void *data, struct mad_stream *stream, struct mad_fra
 //output it to the I2S port.
 void mp3_decoder_task(void *pvParameters)
 {
-    player_t *player = pvParameters;
+    player_t *player = (player_t*)pvParameters;
 
     int ret;
     struct mad_stream *stream;
@@ -105,9 +105,9 @@ void mp3_decoder_task(void *pvParameters)
     struct mad_synth *synth;
 
     //Allocate structs needed for mp3 decoding
-    stream = malloc(sizeof(struct mad_stream));
-    frame = malloc(sizeof(struct mad_frame));
-    synth = malloc(sizeof(struct mad_synth));
+    stream = (struct mad_stream *)malloc(sizeof(struct mad_stream));
+    frame = (struct mad_frame *)malloc(sizeof(struct mad_frame));
+    synth = (struct mad_synth *)malloc(sizeof(struct mad_synth));
     buffer_t *buf = buf_create(MAX_FRAME_SIZE);
 
     if (stream==NULL) { printf("MAD: malloc(stream) failed\n"); return; }

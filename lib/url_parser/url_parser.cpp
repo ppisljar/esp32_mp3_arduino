@@ -52,7 +52,7 @@ static char* url_get_authority(struct http_parser_url *url, char *uri)
     size_t extra = 7;
 
     uint16_t authoritylen = url->field_data[UF_HOST].len;
-    authority = calloc(authoritylen + extra, sizeof(char));
+    authority = (char*)calloc(authoritylen + extra, sizeof(char));
     memcpy(authority,
             &uri[url->field_data[UF_HOST].off],
             url->field_data[UF_HOST].len);
@@ -82,7 +82,7 @@ static char* url_get_path(struct http_parser_url *url, char *uri)
     }
 
     /* +1 for \0 */
-    path = malloc(pathlen + 1);
+    path = (char*)malloc(pathlen + 1);
     if (url->field_set & (1 << UF_PATH)) {
         memcpy(path, &uri[url->field_data[UF_PATH].off],
                 url->field_data[UF_PATH].len);
@@ -104,7 +104,7 @@ static char* url_get_path(struct http_parser_url *url, char *uri)
 
 url_t *url_create(char *uri)
 {
-    struct http_parser_url *url_parser = calloc(1, sizeof(struct http_parser_url));
+    struct http_parser_url *url_parser = (http_parser_url*)calloc(1, sizeof(struct http_parser_url));
     if(url_parser == NULL) {
         ESP_LOGE(TAG, "could not allocate http_parser_url");
         return NULL;
@@ -116,7 +116,7 @@ url_t *url_create(char *uri)
         return NULL;
     }
 
-    url_t *url = calloc(1, sizeof(url_t));
+    url_t *url = (url_t*)calloc(1, sizeof(url_t));
     if(url_parser == NULL) {
         ESP_LOGE(TAG, "could not allocate url_t");
         return NULL;

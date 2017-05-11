@@ -34,7 +34,6 @@ static int start_decoder_task(player_t *player)
     switch (player->media_stream->content_type) {
         case AUDIO_MPEG:
             task_func = mp3_decoder_task;
-            task_name = "mp3_decoder_task";
             stack_depth = 8448;
             break;
 
@@ -43,7 +42,7 @@ static int start_decoder_task(player_t *player)
             return -1;
     }
 
-    if (xTaskCreatePinnedToCore(task_func, task_name, stack_depth, player,
+    if (xTaskCreatePinnedToCore(task_func, "mp3_decoder_task", stack_depth, player,
     PRIO_MAD, NULL, 1) != pdPASS) {
         ESP_LOGE(TAG, "ERROR creating decoder task! Out of memory?");
         return -1;
@@ -62,9 +61,7 @@ static int t;
 int audio_stream_consumer(const char *recv_buf, ssize_t bytes_read,
         void *user_data)
 {
-  printf("audiostreamconsumer\n");
-
-    player_t *player = user_data;
+    player_t *player = (player_t*)user_data;
 
     // don't bother consuming bytes if stopped
     if(player->command == CMD_STOP) {
@@ -73,13 +70,9 @@ int audio_stream_consumer(const char *recv_buf, ssize_t bytes_read,
         return -1;
     }
 
-printf("audiostreamconsumer1\n");
     if (bytes_read > 0) {
-      printf("audiostreamconsumer1\n");
         spiRamFifoWrite(recv_buf, bytes_read);
-        printf("audiostreamconsumer1\n");
     }
-    printf("audiostreamconsumer2\n");
 
     int bytes_in_buf = spiRamFifoFill();
     uint8_t fill_level = (bytes_in_buf * 100) / spiRamFifoLen();
@@ -88,7 +81,6 @@ printf("audiostreamconsumer1\n");
     uint8_t min_fill_lvl = player->buffer_pref == FAST ? 20 : 90;
     bool buffer_ok = fill_level > min_fill_lvl;
     if (player->decoder_status != RUNNING && buffer_ok) {
-printf("audiostreamconsumer\n");
         // buffer is filled, start decoder
         if (start_decoder_task(player) != 0) {
             ESP_LOGE(TAG, "failed to start decoder task");

@@ -13,6 +13,7 @@
 #include "esp_system.h"
 #include "string.h"
 #include <stdio.h>
+#include "Arduino.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -20,13 +21,13 @@
 #include "freertos/queue.h"
 
 #include "spiram_fifo.h"
-#include "spiram.h"
+//#include "spiram.h"
 #include "config.h"
 
 #define SPIREADSIZE 64
 
 static int fifoRpos;
-static int fifoWpos;
+static int32_t fifoWpos;
 static int fifoFill;
 static xSemaphoreHandle semCanRead;
 static xSemaphoreHandle semCanWrite;
@@ -35,10 +36,9 @@ static long fifoOvfCnt, fifoUdrCnt;
 
 //Low watermark where we restart the reader thread.
 #define FIFO_LOWMARK (112*1024)
-#define FAKE_SPI_BUFF
-#ifdef FAKE_SPI_BUFF
+//#ifdef FAKE_SPI_BUFF
 //Re-define a bunch of things so we use the internal buffer
-#undef SPIRAMSIZE
+//#undef SPIRAMSIZE
 //allocate enough for about one mp3 frame
 //#define SPIRAMSIZE 1850
 #define SPIRAMSIZE 32000
@@ -47,7 +47,7 @@ static char fakespiram[SPIRAMSIZE];
 #define spiRamTest() 1
 #define spiRamWrite(pos, buf, n) memcpy(&fakespiram[pos], buf, n)
 #define spiRamRead(pos, buf, n) memcpy(buf, &fakespiram[pos], n)
-#endif
+//#endif
 
 //Initialize the FIFO
 int spiRamFifoInit() {
@@ -105,8 +105,7 @@ void spiRamFifoRead(char *buff, int len) {
 
 //Write bytes to the FIFO
 void spiRamFifoWrite(const char *buff, int buffLen) {
-	int n;
-	printf("WwW");
+	int32_t n;
 	while (buffLen > 0) {
 		n = buffLen;
 
@@ -117,11 +116,8 @@ void spiRamFifoWrite(const char *buff, int buffLen) {
 		if (n > (SPIRAMSIZE - fifoWpos)) {
 			n = SPIRAMSIZE - fifoWpos;
 		}
-		printf("W");
-
 		xSemaphoreTake(mux, portMAX_DELAY);
 		if ((SPIRAMSIZE - fifoFill) < n) {
-			printf("no space");
             // printf("FIFO full.\n");
 			// Drat, not enough free room in FIFO. Wait till there's some read and try again.
 			fifoOvfCnt++;
@@ -130,7 +126,7 @@ void spiRamFifoWrite(const char *buff, int buffLen) {
 			taskYIELD();
 		} else {
 			// Write the data.
-			spiRamWrite(fifoWpos, buff, n);
+			spiRamWrite(fifoWpos, (char*)buff, n);
 			buff += n;
 			buffLen -= n;
 			fifoFill += n;

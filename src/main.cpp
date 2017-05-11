@@ -96,6 +96,10 @@ void setup()
 
     connect_to_wifi((char*)ssid, (char*)password);
 
+    if (!spiRamFifoInit()) {
+        printf("\n\nSPI RAM chip fail!\n");
+        while(1);
+    }
     // init web radio
     start_web_radio();
 }
